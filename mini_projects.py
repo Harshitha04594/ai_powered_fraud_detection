@@ -4,7 +4,6 @@ from skimage.metrics import structural_similarity as ssim
 from fastapi import FastAPI, UploadFile, File, HTTPException
 import shutil
 import os
-from typing import List
 import logging
 
 app = FastAPI()
@@ -12,7 +11,7 @@ app = FastAPI()
 # ✅ Set up logging
 logging.basicConfig(level=logging.INFO)
 
-# ✅ Directories for image storage (Linux-compatible paths for Render)
+# ✅ Directories for image storage
 BASE_DIR = "/opt/render/project/src"
 PRODUCT_IMAGES_DIR = os.path.join(BASE_DIR, "product_images")
 RETURNED_IMAGES_DIR = os.path.join(BASE_DIR, "returned_images")
@@ -21,9 +20,6 @@ RETURNED_IMAGES_DIR = os.path.join(BASE_DIR, "returned_images")
 os.makedirs(PRODUCT_IMAGES_DIR, exist_ok=True)
 os.makedirs(RETURNED_IMAGES_DIR, exist_ok=True)
 
-# ✅ Debug message to confirm the file is running
-logging.info("✅ FastAPI is running the updated mini_projects.py")
-
 # ✅ Function to compute Structural Similarity Index (SSIM)
 def compare_images(img1_path, img2_path):
     logging.info(f"🔍 Comparing images: {img1_path} vs {img2_path}")
@@ -31,8 +27,8 @@ def compare_images(img1_path, img2_path):
     img2 = cv2.imread(img2_path, cv2.IMREAD_GRAYSCALE)
 
     if img1 is None or img2 is None:
-        logging.error(f"❌ Image loading failed: {img1_path} or {img2_path}")
-        return 0.0  # Return 0.0 if images cannot be loaded
+        logging.error("❌ Image loading failed")
+        return 0.0
 
     img1 = cv2.resize(img1, (300, 300))
     img2 = cv2.resize(img2, (300, 300))
@@ -46,7 +42,7 @@ def get_product_images(product_id):
         if not os.path.exists(PRODUCT_IMAGES_DIR):
             logging.error("❌ Product images directory does not exist!")
             return []
-        
+
         product_images = [f for f in os.listdir(PRODUCT_IMAGES_DIR) if f.startswith(f"{product_id}_")]
         logging.info(f"📸 Found images for {product_id}: {product_images}")
         return product_images
@@ -55,27 +51,7 @@ def get_product_images(product_id):
         logging.error(f"❌ Error fetching product images: {e}")
         return []
 
-# ✅ Endpoint: Upload multiple images for a product
-@app.post("/upload_product_images")
-async def upload_product_images(product_id: str, files: List[UploadFile] = File(...)):
-    try:
-        logging.info(f"📤 Uploading images for product_id: {product_id}")
-
-        saved_files = []
-        for idx, file in enumerate(files):
-            file_path = os.path.join(PRODUCT_IMAGES_DIR, f"{product_id}_{idx}.jpg")
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            saved_files.append(file_path)
-
-        logging.info(f"✅ Images saved: {saved_files}")
-        return {"message": "Product images uploaded successfully!", "files": saved_files}
-
-    except Exception as e:
-        logging.error(f"❌ Error uploading images: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal Error: {e}")
-
-# ✅ Endpoint: Verify return image by comparing with stored product images
+# ✅ Verify return image by comparing with stored product images
 @app.post("/verify_return")
 async def verify_return(product_id: str, file: UploadFile = File(...)):
     try:
@@ -113,18 +89,3 @@ async def verify_return(product_id: str, file: UploadFile = File(...)):
     except Exception as e:
         logging.error(f"❌ Internal Error: {e}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
-
-# ✅ Endpoint: List available product images (For Debugging)
-@app.get("/list_product_images")
-async def list_product_images():
-    try:
-        if not os.path.exists(PRODUCT_IMAGES_DIR):
-            return {"error": "Product images directory not found"}
-        
-        images = os.listdir(PRODUCT_IMAGES_DIR)
-        logging.info(f"📂 Available images: {images}")
-        return {"available_images": images}
-
-    except Exception as e:
-        logging.error(f"❌ Error listing images: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal Error: {e}")
