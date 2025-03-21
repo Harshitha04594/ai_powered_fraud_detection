@@ -63,4 +63,68 @@ async def upload_product_images(product_id: str, files: List[UploadFile] = File(
 
         saved_files = []
         for idx, file in enumerate(files):
-            file_path = os.path.join(PRODUCT_IMAGES
+            file_path = os.path.join(PRODUCT_IMAGES_DIR, f"{product_id}_{idx}.jpg")
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            saved_files.append(file_path)
+
+        logging.info(f"✅ Images saved: {saved_files}")
+        return {"message": "Product images uploaded successfully!", "files": saved_files}
+
+    except Exception as e:
+        logging.error(f"❌ Error uploading images: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal Error: {e}")
+
+# ✅ Endpoint: Verify return image by comparing with stored product images
+@app.post("/verify_return")
+async def verify_return(product_id: str, file: UploadFile = File(...)):
+    try:
+        logging.info(f"🔎 Verifying return for product_id: {product_id}")
+
+        # ✅ Save the uploaded return image
+        returned_path = os.path.join(RETURNED_IMAGES_DIR, f"{product_id}_returned.jpg")
+        with open(returned_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # ✅ Auto-fetch corresponding product images
+        product_images = get_product_images(product_id)
+
+        if not product_images:
+            raise HTTPException(status_code=404, detail=f"No product images found for product_id: {product_id}")
+
+        # ✅ Compare return image with stored product images
+        best_similarity = 0.0
+        for img in product_images:
+            product_img_path = os.path.join(PRODUCT_IMAGES_DIR, img)
+            similarity_score = compare_images(product_img_path, returned_path)
+            best_similarity = max(best_similarity, similarity_score)
+
+        # ✅ Approve if similarity is above 80%
+        status = "Approved" if best_similarity > 0.8 else "Rejected"
+
+        logging.info(f"✅ Verification complete. Status: {status}, Similarity: {best_similarity}")
+
+        return {
+            "status": status,
+            "best_similarity": best_similarity,
+            "product_id": product_id
+        }
+
+    except Exception as e:
+        logging.error(f"❌ Internal Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
+
+# ✅ Endpoint: List available product images (For Debugging)
+@app.get("/list_product_images")
+async def list_product_images():
+    try:
+        if not os.path.exists(PRODUCT_IMAGES_DIR):
+            return {"error": "Product images directory not found"}
+        
+        images = os.listdir(PRODUCT_IMAGES_DIR)
+        logging.info(f"📂 Available images: {images}")
+        return {"available_images": images}
+
+    except Exception as e:
+        logging.error(f"❌ Error listing images: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal Error: {e}")
