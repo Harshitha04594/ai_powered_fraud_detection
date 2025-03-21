@@ -89,3 +89,18 @@ async def verify_return(product_id: str, file: UploadFile = File(...)):
     except Exception as e:
         logging.error(f"❌ Internal Error: {e}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
+
+# ✅ Endpoint to list available product images
+@app.get("/list_product_images")
+async def list_product_images():
+    try:
+        if not os.path.exists(PRODUCT_IMAGES_DIR):
+            return {"error": "Product images directory not found"}
+
+        images = os.listdir(PRODUCT_IMAGES_DIR)
+        logging.info(f"📂 Available images: {images}")
+        return {"available_images": images}
+
+    except Exception as e:
+        logging.error(f"❌ Error listing images: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal Error: {e}")
