@@ -25,11 +25,24 @@ if uploaded_file and product_id:
             # Handle the response
             if response.status_code == 200:
                 result = response.json()
+                similarity_percentage = result['best_similarity'] * 100
                 st.success(f"✅ Status: {result['status']}")
-                st.info(f"📊 Similarity: {result['best_similarity']:.2f}")
+                st.info(f"📊 Similarity: {similarity_percentage:.2f}%")
+
+                # Display the original product images and return image
+                product_images_response = requests.get(f"{API_URL}/list_product_images", params={"product_id": product_id})
+                if product_images_response.status_code == 200:
+                    product_images = product_images_response.json().get("available_images", [])
+                    st.subheader("Original Product Images:")
+                    for img_url in product_images:
+                        st.image(f"{API_URL}/get_image?image_name={img_url}", caption=img_url)
+
+                st.subheader("Returned Image:")
+                st.image(uploaded_file, caption="Returned Image")
+
             else:
                 st.error("❌ Error verifying return. Please check the Product ID and try again.")
-        
+
         except Exception as e:
             st.error(f"⚠️ An error occurred: {e}")
 else:
