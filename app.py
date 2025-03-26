@@ -13,7 +13,7 @@ uploaded_file = st.file_uploader("📤 Upload Return Image", type=["jpg", "png"]
 if uploaded_file and product_id:
     if st.button("✅ Verify Return"):
         try:
-            # ✅ Send return image and product ID to backend for verification
+            # ✅ Send return image and product ID for verification
             files = {"file": uploaded_file.getvalue()}
             params = {"product_id": product_id}
 
@@ -23,10 +23,10 @@ if uploaded_file and product_id:
             if response.status_code == 200:
                 result = response.json()
 
-                # ✅ Convert similarity score to a 1-100 scale
+                # ✅ Convert similarity score to 1-100 scale
                 similarity_percentage = round(result['best_similarity'] * 100, 2)
 
-                # Display result
+                # Display verification results
                 st.success(f"✅ Status: {result['status']}")
                 st.info(f"📊 Similarity: {similarity_percentage:.2f}%")
 
@@ -35,21 +35,19 @@ if uploaded_file and product_id:
 
                 # ✅ Fetch and display original product images
                 image_response = requests.get(f"{API_URL}/list_product_images")
-
+                
                 if image_response.status_code == 200:
                     images = image_response.json().get("available_images", [])
                     st.write("📂 Available Images from Backend:", images)  # Debugging output
 
-                    # Filter and display images matching product_id (e.g., "prod1_0.jpg")
+                    # Filter product images for entered product_id
                     product_images = [img for img in images if img.startswith(f"{product_id}_")]
-                    st.write("🔎 Matched Images:", product_images)  # Debugging output
 
                     if product_images:
                         st.subheader("📸 Original Product Images")
                         for img in product_images:
                             image_url = f"{API_URL}/get_product_image?filename={img}"
                             st.image(image_url, caption=f"Original: {img}", use_column_width=True)
-                            st.write("🖼️ Image URL:", image_url)  # Debugging output
                     else:
                         st.warning("⚠️ No original product images found for this Product ID.")
 
@@ -59,7 +57,6 @@ if uploaded_file and product_id:
                 # ✅ Display stored return image (if available)
                 return_image_url = f"{API_URL}/get_return_image?product_id={product_id}"
                 st.image(return_image_url, caption="📦 Stored Return Image", use_column_width=True)
-                st.write("📥 Return Image URL:", return_image_url)  # Debugging output
 
             else:
                 st.error(f"❌ Error verifying return. Response: {response.text}")
