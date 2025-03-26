@@ -39,13 +39,19 @@ if uploaded_file and product_id:
                 if image_response.status_code == 200:
                     images = image_response.json().get("available_images", [])
 
+                    # 🔍 Log available images for debugging
+                    st.write("🔍 Available Images:", images)
+
                     # Filter and display images matching product_id
                     product_images = [img for img in images if img.startswith(f"{product_id}_")]
-                    
+
+                    # 🔍 Log matched images
+                    st.write("✅ Matched Images:", product_images)
+
                     if product_images:
                         st.subheader("📸 Original Product Images")
                         for img in product_images:
-                            image_url = f"{API_URL}/get_product_image/{img}"
+                            image_url = f"{API_URL}/get_product_image?filename={img}"
                             st.image(image_url, caption=f"Original: {img}", use_column_width=True)
                     else:
                         st.warning("⚠️ No original product images found for this Product ID.")
