@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import shutil
 import os
 import logging
@@ -20,9 +20,6 @@ RETURNED_IMAGES_DIR = os.path.join(BASE_DIR, "returned_images")
 # ✅ Ensure directories exist
 os.makedirs(PRODUCT_IMAGES_DIR, exist_ok=True)
 os.makedirs(RETURNED_IMAGES_DIR, exist_ok=True)
-
-# ✅ Serve static product images
-app.mount("/static", StaticFiles(directory=PRODUCT_IMAGES_DIR), name="static")
 
 # ✅ Function to compute Structural Similarity Index (SSIM)
 def compare_images(img1_path, img2_path):
@@ -43,14 +40,9 @@ def compare_images(img1_path, img2_path):
 # ✅ Helper function to fetch stored images by product_id
 def get_product_images(product_id):
     try:
-        if not os.path.exists(PRODUCT_IMAGES_DIR):
-            logging.error("❌ Product images directory does not exist!")
-            return []
-
         product_images = [f for f in os.listdir(PRODUCT_IMAGES_DIR) if f.startswith(f"{product_id}_")]
         logging.info(f"📸 Found images for {product_id}: {product_images}")
         return product_images
-
     except Exception as e:
         logging.error(f"❌ Error fetching product images: {e}")
         return []
@@ -66,7 +58,7 @@ async def verify_return(product_id: str, file: UploadFile = File(...)):
         with open(returned_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # ✅ Auto-fetch corresponding product images
+        # ✅ Fetch corresponding product images
         product_images = get_product_images(product_id)
 
         if not product_images:
@@ -98,13 +90,17 @@ async def verify_return(product_id: str, file: UploadFile = File(...)):
 @app.get("/list_product_images")
 async def list_product_images():
     try:
-        if not os.path.exists(PRODUCT_IMAGES_DIR):
-            return {"error": "Product images directory not found"}
-
         images = os.listdir(PRODUCT_IMAGES_DIR)
         logging.info(f"📂 Available images: {images}")
         return {"available_images": images}
-
     except Exception as e:
         logging.error(f"❌ Error listing images: {e}")
         raise HTTPException(status_code=500, detail=f"Internal Error: {e}")
+
+# ✅ Serve the uploaded return image
+@app.get("/get_return_image/{product_id}")
+async def get_return_image(product_id: str):
+    return_image_path = os.path.join(RETURNED_IMAGES_DIR, f"{product_id}_returned.jpg")
+    if os.path.exists(return_image_path):
+        return FileResponse(return_image_path)
+    raise HTTPException(status_code=404, detail="Return image not found")
