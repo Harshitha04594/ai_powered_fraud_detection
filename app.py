@@ -38,33 +38,31 @@ if uploaded_file and product_id:
 
                 if image_response.status_code == 200:
                     images = image_response.json().get("available_images", [])
+                    st.write("📂 Available Images from Backend:", images)  # Debugging output
 
-                    # 🔍 Log available images for debugging
-                    st.write("🔍 Available Images:", images)
-
-                    # Filter and display images matching product_id
+                    # Filter and display images matching product_id (e.g., "prod1_0.jpg")
                     product_images = [img for img in images if img.startswith(f"{product_id}_")]
-
-                    # 🔍 Log matched images
-                    st.write("✅ Matched Images:", product_images)
+                    st.write("🔎 Matched Images:", product_images)  # Debugging output
 
                     if product_images:
                         st.subheader("📸 Original Product Images")
                         for img in product_images:
                             image_url = f"{API_URL}/get_product_image?filename={img}"
                             st.image(image_url, caption=f"Original: {img}", use_column_width=True)
+                            st.write("🖼️ Image URL:", image_url)  # Debugging output
                     else:
                         st.warning("⚠️ No original product images found for this Product ID.")
 
                 else:
-                    st.error("❌ Failed to fetch original product images.")
+                    st.error(f"❌ Failed to fetch original product images. Error: {image_response.text}")
 
                 # ✅ Display stored return image (if available)
                 return_image_url = f"{API_URL}/get_return_image?product_id={product_id}"
                 st.image(return_image_url, caption="📦 Stored Return Image", use_column_width=True)
+                st.write("📥 Return Image URL:", return_image_url)  # Debugging output
 
             else:
-                st.error("❌ Error verifying return. Check the Product ID and try again.")
+                st.error(f"❌ Error verifying return. Response: {response.text}")
 
         except Exception as e:
             st.error(f"⚠️ An error occurred: {e}")
