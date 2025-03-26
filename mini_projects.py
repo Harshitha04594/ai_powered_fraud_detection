@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.staticfiles import StaticFiles
 import shutil
 import os
 import logging
@@ -19,6 +20,9 @@ RETURNED_IMAGES_DIR = os.path.join(BASE_DIR, "returned_images")
 # ✅ Ensure directories exist
 os.makedirs(PRODUCT_IMAGES_DIR, exist_ok=True)
 os.makedirs(RETURNED_IMAGES_DIR, exist_ok=True)
+
+# ✅ Serve static product images
+app.mount("/static", StaticFiles(directory=PRODUCT_IMAGES_DIR), name="static")
 
 # ✅ Function to compute Structural Similarity Index (SSIM)
 def compare_images(img1_path, img2_path):
