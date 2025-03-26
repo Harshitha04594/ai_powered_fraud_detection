@@ -2,11 +2,22 @@ import cv2
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
 import logging
 
 app = FastAPI()
+
+# ✅ Allow Streamlit to access FastAPI
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ✅ Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -86,7 +97,7 @@ async def list_product_images():
 async def get_product_image(filename: str):
     image_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
     if os.path.isfile(image_path):
-        return FileResponse(image_path)
+        return FileResponse(image_path, media_type="image/jpeg")
     else:
         raise HTTPException(status_code=404, detail="Product image not found")
 
@@ -95,6 +106,7 @@ async def get_product_image(filename: str):
 async def get_return_image(product_id: str):
     return_image_path = os.path.join(RETURNED_IMAGES_DIR, f"{product_id}_returned.jpg")
     if os.path.isfile(return_image_path):
-        return FileResponse(return_image_path)
+        return FileResponse(return_image_path, media_type="image/jpeg")
     else:
         raise HTTPException(status_code=404, detail="Return image not found")
+
