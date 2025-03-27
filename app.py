@@ -1,125 +1,102 @@
 import streamlit as st
 import requests
+from PIL import Image
+import io
 
-# Backend API URL
-API_URL = "https://ai-powered-fraud-detection.onrender.com"
+# Set Page Config
+st.set_page_config(page_title="AI-Powered Return Verification", page_icon="🛡️", layout="wide")
 
-# Custom CSS for Light Blue Background & White Content Box
+# Apply Custom CSS for Styling
 st.markdown(
     """
     <style>
-        /* Light Blue Background */
-        .stApp {
-            background-color: #ADD8E6;  /* Light Blue */
-        }
-
-        /* White Centered Content Box */
-        .content-container {
+        /* Background Styling */
+        body {
             background-color: white;
-            padding: 30px;
+        }
+
+        .stApp {
+            background-color: white;
+        }
+
+        /* Centered Content Box */
+        .main-container {
+            background-color: #b0d4f1;
+            padding: 40px;
             border-radius: 15px;
-            box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
             margin: auto;
-            width: 80%;
-            text-align: center;
         }
 
-        /* Marquee Effect */
+        /* Marquee Styling */
         .marquee-container {
-            background: linear-gradient(to right, #1E90FF, #00BFFF);  /* Darker Blue Gradient */
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
+            background: linear-gradient(to right, #008CBA, #005F7F);
             padding: 10px;
-            text-align: center;
             border-radius: 10px;
-            overflow: hidden;
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
         }
 
-        .marquee {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee 10s linear infinite;
+        /* Custom Button */
+        .stButton>button {
+            background-color: #008CBA;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
         }
 
-        @keyframes marquee {
-            from { transform: translateX(100%); }
-            to { transform: translateX(-100%); }
+        /* Input Field Styling */
+        .stTextInput>div>div>input {
+            border-radius: 8px;
+            padding: 10px;
         }
 
     </style>
-
-    <!-- Marquee Banner -->
-    <div class="marquee-container">
-        <span class="marquee">🚀 AI-Powered Return Verification System - Secure & Smart! 🛡️</span>
-    </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
-# White Content Box
-st.markdown('<div class="content-container">', unsafe_allow_html=True)
-st.title("🛡️ AI-Powered Return Verification System")
+# Marquee Message
+st.markdown('<div class="marquee-container">🚀 AI-Powered Return Verification System - Secure & Smart! 🚀</div>', unsafe_allow_html=True)
 
-# Input fields
+# Centered Main Content
+st.markdown('<div class="main-container">', unsafe_allow_html=True)
+
+# Title
+st.markdown("### 🛡️ AI-Powered Return Verification System", unsafe_allow_html=True)
+
+# Input: Product ID
 product_id = st.text_input("🔍 Enter Product ID")
-uploaded_file = st.file_uploader("📤 Upload Return Image", type=["jpg", "png"])
 
-if uploaded_file and product_id:
-    if st.button("✅ Verify Return"):
-        try:
-            # ✅ Send return image and product ID for verification
-            files = {"file": uploaded_file.getvalue()}
-            params = {"product_id": product_id}
+# Upload Image
+uploaded_file = st.file_uploader("📤 Upload Return Image", type=["jpg", "jpeg", "png"])
 
-            # Send verification request
-            response = requests.post(f"{API_URL}/verify_return", files=files, params=params)
+# Verify Button
+if st.button("✅ Verify Return"):
+    if uploaded_file and product_id:
+        # Convert uploaded file to bytes
+        img_bytes = uploaded_file.read()
 
-            if response.status_code == 200:
-                result = response.json()
+        # Send request to FastAPI for verification
+        files = {"file": (uploaded_file.name, img_bytes, "image/jpeg")}
+        response = requests.post(f"http://127.0.0.1:8000/verify_return?product_id={product_id}", files=files)
 
-                # ✅ Convert similarity score to 1-100 scale
-                similarity_percentage = round(result['best_similarity'] * 100, 2)
+        if response.status_code == 200:
+            result = response.json()
+            similarity = result["best_similarity"] * 100
+            status = result["status"]
 
-                # Display verification results
-                st.success(f"✅ Status: {result['status']}")
-                st.info(f"📊 Similarity: {similarity_percentage:.2f}%")
+            # Display Result
+            st.success(f"✅ Status: {status}")
+            st.info(f"📊 Similarity: {similarity:.2f}%")
+        else:
+            st.error("❌ Error processing the request.")
+    else:
+        st.warning("⚠️ Please enter a Product ID and upload an image.")
 
-                # ✅ Show uploaded return image
-                st.image(uploaded_file, caption="📷 Uploaded Return Image", use_column_width=True)
-
-                # ✅ Fetch and display original product images
-                image_response = requests.get(f"{API_URL}/list_product_images")
-                
-                if image_response.status_code == 200:
-                    images = image_response.json().get("available_images", [])
-                    st.write("📂 Available Images from Backend:", images)  # Debugging output
-
-                    # Filter product images for entered product_id
-                    product_images = [img for img in images if img.startswith(f"{product_id}_")]
-
-                    if product_images:
-                        st.subheader("📸 Original Product Images")
-                        for img in product_images:
-                            image_url = f"{API_URL}/get_product_image?filename={img}"
-                            st.image(image_url, caption=f"Original: {img}", use_column_width=True)
-                    else:
-                        st.warning("⚠️ No original product images found for this Product ID.")
-
-                else:
-                    st.error(f"❌ Failed to fetch original product images. Error: {image_response.text}")
-
-                # ✅ Display stored return image (if available)
-                return_image_url = f"{API_URL}/get_return_image?product_id={product_id}"
-                st.image(return_image_url, caption="📦 Stored Return Image", use_column_width=True)
-
-            else:
-                st.error(f"❌ Error verifying return. Response: {response.text}")
-
-        except Exception as e:
-            st.error(f"⚠️ An error occurred: {e}")
-
-else:
-    st.warning("⚠️ Please enter a Product ID and upload a return image.")
-
-st.markdown('</div>', unsafe_allow_html=True)  # Close the content box
+st.markdown('</div>', unsafe_allow_html=True)  # Close main container
