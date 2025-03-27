@@ -7,7 +7,7 @@ API_URL = "https://ai-powered-fraud-detection.onrender.com"
 # Page Configuration
 st.set_page_config(page_title="AI-Powered Return Verification", page_icon="🛡️", layout="wide")
 
-# Custom CSS for styling
+# Custom CSS for styling + animated marquee
 st.markdown(
     """
     <style>
@@ -28,6 +28,9 @@ st.markdown(
 
         /* Marquee container */
         .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
             background: linear-gradient(to right, #0066cc, #0099ff);
             padding: 12px;
             border-radius: 10px;
@@ -36,6 +39,17 @@ st.markdown(
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 20px;
+        }
+
+        /* Marquee animation */
+        .marquee-text {
+            display: inline-block;
+            animation: marquee-scroll 10s linear infinite;
+        }
+
+        @keyframes marquee-scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
 
         /* Custom buttons */
@@ -64,8 +78,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Marquee Banner
-st.markdown('<div class="marquee-container">🚀 AI-Powered Return Verification - Secure & Smart! 🚀</div>', unsafe_allow_html=True)
+# Moving Marquee
+st.markdown(
+    '<div class="marquee-container">'
+    '<span class="marquee-text">🚀 AI-Powered Return Verification - Secure & Smart! 🚀</span>'
+    '</div>',
+    unsafe_allow_html=True
+)
 
 # Centered Content Box
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
