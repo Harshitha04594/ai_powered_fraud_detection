@@ -1,41 +1,64 @@
 import streamlit as st
 import requests
 
-# Apply custom CSS for background color
+# Backend API URL
+API_URL = "https://ai-powered-fraud-detection.onrender.com"
+
+# Custom CSS for styling
 st.markdown(
     """
     <style>
-        /* Background color */
-        body {
-            background-color: #f0f2f6;  /* Light Gray */
-        }
-        /* Customizing Titles */
+        /* Background white, middle section blue */
         .stApp {
-            background-color: #e6f7ff;  /* Light Blue */
+            background-color: white;
         }
-        h1 {
-            color: #007BFF;  /* Blue */
-            font-size: 32px;
-        }
-        h2, h3 {
-            color: #003366;  /* Dark Blue */
-        }
-        /* Buttons */
-        .stButton>button {
-            background-color: #007BFF;
+
+        .main-container {
+            background-color: #007BFF;  /* Blue */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
+            margin: auto;
+            width: 80%;
             color: white;
-            font-size: 16px;
-            border-radius: 8px;
         }
+
+        /* Marquee Effect */
+        .marquee-container {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);  /* Gradient */
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 10s linear infinite;
+        }
+
+        @keyframes marquee {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+
     </style>
+
+    <!-- Marquee Banner -->
+    <div class="marquee-container">
+        <span class="marquee">🚀 AI-Powered Return Verification System - Secure & Smart! 🛡️</span>
+    </div>
     """,
     unsafe_allow_html=True
 )
 
+# Title inside the blue box
+st.markdown('<div class="main-container">', unsafe_allow_html=True)
 st.title("🛡️ AI-Powered Return Verification System")
-
-# Backend API URL
-API_URL = "https://ai-powered-fraud-detection.onrender.com"
 
 # Input fields
 product_id = st.text_input("🔍 Enter Product ID")
@@ -58,11 +81,7 @@ if uploaded_file and product_id:
                 similarity_percentage = round(result['best_similarity'] * 100, 2)
 
                 # Display verification results
-                if result['status'] == "Approved":
-                    st.success(f"✅ Status: {result['status']}")
-                else:
-                    st.error(f"❌ Status: {result['status']}")
-
+                st.success(f"✅ Status: {result['status']}")
                 st.info(f"📊 Similarity: {similarity_percentage:.2f}%")
 
                 # ✅ Show uploaded return image
@@ -101,3 +120,5 @@ if uploaded_file and product_id:
 
 else:
     st.warning("⚠️ Please enter a Product ID and upload a return image.")
+
+st.markdown('</div>', unsafe_allow_html=True)  # Close the blue box
