@@ -1,10 +1,41 @@
 import streamlit as st
 import requests
 
-# Backend API URL
-API_URL = "https://ai-powered-fraud-detection.onrender.com"
+# Apply custom CSS for background color
+st.markdown(
+    """
+    <style>
+        /* Background color */
+        body {
+            background-color: #f0f2f6;  /* Light Gray */
+        }
+        /* Customizing Titles */
+        .stApp {
+            background-color: #e6f7ff;  /* Light Blue */
+        }
+        h1 {
+            color: #007BFF;  /* Blue */
+            font-size: 32px;
+        }
+        h2, h3 {
+            color: #003366;  /* Dark Blue */
+        }
+        /* Buttons */
+        .stButton>button {
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 st.title("🛡️ AI-Powered Return Verification System")
+
+# Backend API URL
+API_URL = "https://ai-powered-fraud-detection.onrender.com"
 
 # Input fields
 product_id = st.text_input("🔍 Enter Product ID")
@@ -27,7 +58,11 @@ if uploaded_file and product_id:
                 similarity_percentage = round(result['best_similarity'] * 100, 2)
 
                 # Display verification results
-                st.success(f"✅ Status: {result['status']}")
+                if result['status'] == "Approved":
+                    st.success(f"✅ Status: {result['status']}")
+                else:
+                    st.error(f"❌ Status: {result['status']}")
+
                 st.info(f"📊 Similarity: {similarity_percentage:.2f}%")
 
                 # ✅ Show uploaded return image
@@ -65,4 +100,4 @@ if uploaded_file and product_id:
             st.error(f"⚠️ An error occurred: {e}")
 
 else:
-    st.warning("⚠️ Please enter a Product ID and upload a return image.") 
+    st.warning("⚠️ Please enter a Product ID and upload a return image.")
