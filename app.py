@@ -4,13 +4,13 @@ import requests
 # Backend API URL
 API_URL = "https://ai-powered-fraud-detection.onrender.com"
 
-# Custom CSS for Full Blue Background & White Content Box
+# Custom CSS for Light Blue Background & White Content Box
 st.markdown(
     """
     <style>
-        /* Full Blue Background */
+        /* Light Blue Background */
         .stApp {
-            background-color: #007BFF;
+            background-color: #ADD8E6;  /* Light Blue */
         }
 
         /* White Centered Content Box */
@@ -26,7 +26,7 @@ st.markdown(
 
         /* Marquee Effect */
         .marquee-container {
-            background: linear-gradient(to right, #ff416c, #ff4b2b);  /* Gradient */
+            background: linear-gradient(to right, #1E90FF, #00BFFF);  /* Darker Blue Gradient */
             color: white;
             font-size: 20px;
             font-weight: bold;
