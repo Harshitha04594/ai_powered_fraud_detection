@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 from PIL import Image
-import io
 
 # Set Page Config
 st.set_page_config(page_title="AI-Powered Return Verification", page_icon="🛡️", layout="wide")
@@ -12,42 +11,54 @@ st.markdown(
     <style>
         /* Background Styling */
         body {
-            background-color: white;
+            background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
         }
 
         .stApp {
-            background-color: white;
+            background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
         }
 
         /* Centered Content Box */
         .main-container {
-            background-color: #b0d4f1;
-            padding: 40px;
+            background: white;
+            padding: 30px;
             border-radius: 15px;
-            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
             max-width: 700px;
             margin: auto;
         }
 
         /* Marquee Styling */
         .marquee-container {
-            background: linear-gradient(to right, #008CBA, #005F7F);
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .marquee-text {
+            display: inline-block;
             padding: 10px;
-            border-radius: 10px;
-            text-align: center;
+            background: #007bff;
             color: white;
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 15px;
+            border-radius: 8px;
+            animation: marquee 10s linear infinite;
+        }
+
+        @keyframes marquee {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
         }
 
         /* Custom Button */
         .stButton>button {
-            background-color: #008CBA;
+            background-color: #007bff;
             color: white;
-            padding: 8px 15px;
+            padding: 10px;
             border-radius: 8px;
             font-weight: bold;
+            width: 100%;
         }
 
         /* Input Field Styling */
@@ -62,7 +73,10 @@ st.markdown(
 )
 
 # Marquee Message
-st.markdown('<div class="marquee-container">🚀 AI-Powered Return Verification System - Secure & Smart! 🚀</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="marquee-container"><div class="marquee-text">🚀 AI-Powered Return Verification System - Secure & Smart! 🚀</div></div>',
+    unsafe_allow_html=True
+)
 
 # Centered Main Content
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
