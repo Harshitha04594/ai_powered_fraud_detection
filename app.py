@@ -4,23 +4,24 @@ import requests
 # Backend API URL
 API_URL = "https://ai-powered-fraud-detection.onrender.com"
 
-# Custom CSS for styling
+# Custom CSS for Full Blue Background & White Content Box
 st.markdown(
     """
     <style>
-        /* Background white, middle section blue */
+        /* Full Blue Background */
         .stApp {
-            background-color: white;
+            background-color: #007BFF;
         }
 
-        .main-container {
-            background-color: #007BFF;  /* Blue */
+        /* White Centered Content Box */
+        .content-container {
+            background-color: white;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.3);
             margin: auto;
             width: 80%;
-            color: white;
+            text-align: center;
         }
 
         /* Marquee Effect */
@@ -56,8 +57,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Title inside the blue box
-st.markdown('<div class="main-container">', unsafe_allow_html=True)
+# White Content Box
+st.markdown('<div class="content-container">', unsafe_allow_html=True)
 st.title("🛡️ AI-Powered Return Verification System")
 
 # Input fields
@@ -121,4 +122,4 @@ if uploaded_file and product_id:
 else:
     st.warning("⚠️ Please enter a Product ID and upload a return image.")
 
-st.markdown('</div>', unsafe_allow_html=True)  # Close the blue box
+st.markdown('</div>', unsafe_allow_html=True)  # Close the content box
